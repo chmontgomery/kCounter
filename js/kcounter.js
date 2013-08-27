@@ -80,14 +80,28 @@
 			}) ;
 		},
 		update : function( content ) {
+
+			function isElementInViewport(el) {
+			    var rect = el.getBoundingClientRect();
+
+			    return (
+			        rect.top >= 0 &&
+			        rect.left >= 0 &&
+			        rect.bottom <= $(window).height() &&
+			        rect.right <= $(window).width()
+			        );
+			}
 			
 			return this.each(function(){
 									  
 				var $this = $(this);
-				
+				var rawEl = $this.get(0);
+
 				var chars = content.toString().split("") ;				
-				var numberCounters = $('ul', $this).length ;
+				var numberCounters = $('ul', $this).length;
 				var settings = $(this).data('settings');
+
+				var isElInViewport = isElementInViewport(rawEl);
 				
 				if(numberCounters!==chars.length){
 					var diff = chars.length-numberCounters ;
@@ -122,14 +136,23 @@
 							}				   
 							$('ul:nth-child('+(index+1)+') li', $this).html(html) ;
 						}
-						$('ul:nth-child('+(index+1)+') li', $this).animate({ top: -value * settings.height }, settings.duration, settings.easing ) ;	
+						var newValue = $('ul:nth-child('+(index+1)+') li', $this);
+						if (isElInViewport) {
+							newValue.animate({ top: -value * settings.height }, settings.duration, settings.easing );
+						} else {
+							newValue.css('top', -value * settings.height);
+						}
 					} else {
-						$('ul:nth-child('+(index+1)+') li', $this).html("<span>"+value+"</span>").animate({top: 0}, settings.duration, settings.easing) ;
+						var newValue = $('ul:nth-child('+(index+1)+') li', $this).html("<span>"+value+"</span>");
+						if (isElInViewport) {
+							newValue.animate({top: 0}, settings.duration, settings.easing);
+						} else {
+							newValue.css('top', 0);
+						}
 					}
 				});
 				
 				methods.updateCss.call($this, settings);
-				
 			}) ;
 		}
 	};	  
